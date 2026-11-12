@@ -1,0 +1,43 @@
+# ---- 私有部署数据（绝不上传）----
+server/data/
+*.db
+secrets.env
+.env
+
+# ---- 签名密钥（绝不上传）----
+tv-app/app/mitv-release.keystore
+*.keystore
+
+# ---- 本地私有题库文件（不上传）----
+web-server/app/*.json
+!web-server/app/english_outline_u1u8.json
+!web-server/app/seed_english_textbook_u1u8.json
+web-server/removed_questions_report.json
+web-server/tools/extract_dianzhong.py
+web-server/tools/extract_doubao.py
+web-server/tools/extract_chinese_5xing.py
+web-server/tools/doubao_skip_report.json
+web-server/tools/dianzhong_skip_report.json
+web-server/tools/dianzhong_main_pending.json
+
+# ---- 私有文档（含家庭信息与内网 IP，不上传）----
+README.local.md
+AGENTS.md
+DEPLOY_AND_TROUBLESHOOTING.md
+
+# ---- 构建产物与缓存 ----
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+tv-app/app/build/
+tv-app/.gradle/
+tv-app/local.properties
+*.apk
+.DS_Store
+.idea/
+.vscode/
+
+# 本地离线题库资产（不上传）
+tv-app/app/src/main/assets/default_quiz.json
+README.local.md

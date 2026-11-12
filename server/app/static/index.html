@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>小米电视防沉迷题库管理后台</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .container { max-width: 1080px; margin: 0 auto; padding: 20px 16px 60px; }
+    header {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    header h1 { margin: 0; font-size: 20px; }
+    .sub-url {
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .code-pill {
+      background: #eff6ff;
+      color: #1e40af;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 13px;
+      border: 1px solid #bfdbfe;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 9px 16px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    input, select, textarea {
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    textarea { width: 100%; min-height: 180px; font-family: monospace; }
+    button {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-outline { background: #fff; border-color: var(--border); color: var(--text); }
+    .btn-danger { background: #fee2e2; color: var(--danger); border-color: #fecaca; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .q-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 10px;
+      background: #fafafa;
+    }
+    .q-item.disabled { opacity: 0.55; }
+    .q-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+    .badge {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+    .badge.grade { background: #f3f4f6; color: #374151; }
+    .badge.off { background: #fee2e2; color: #991b1b; }
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 6px;
+      margin: 8px 0;
+    }
+    .opt-box {
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: #fff;
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .opt-box.correct {
+      background: #dcfce7;
+      border-color: #86efac;
+      color: #166534;
+      font-weight: 600;
+    }
+    .explain { font-size: 12px; color: var(--muted); }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .field input, .field select { width: 100%; }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+    }
+    .stat-val { font-size: 26px; font-weight: 700; color: var(--primary); }
+    .stat-lbl { font-size: 12px; color: var(--muted); }
+    .modal-mask {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 99;
+    }
+    .modal-mask.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      max-width: 560px;
+      width: 100%;
+      padding: 20px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal h2 { margin: 0 0 14px; font-size: 18px; }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #111827;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+      z-index: 200;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; }
+    th { background: #f9fafb; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <h1>小米电视防沉迷题库管理（广州四年级 · 人教版）</h1>
+      <div class="sub-url">
+        <span>电视拉取地址：</span>
+        <span class="code-pill" id="quizUrlText"></span>
+        <button class="btn-outline btn-sm" onclick="copyQuizUrl()">复制网址</button>
+      </div>
+    </div>
+    <div id="headerSummary" style="font-size:14px; color:var(--muted);">加载中...</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('questions', this)">题库管理</button>
+    <button class="tab-btn" onclick="switchTab('remote', this)">手机远程放行</button>
+    <button class="tab-btn" onclick="switchTab('ai', this)">AI 一键出题</button>
+    <button class="tab-btn" onclick="switchTab('library', this)">题库配置</button>
+    <button class="tab-btn" onclick="switchTab('import', this)">JSON 批量导入/导出</button>
+    <button class="tab-btn" onclick="switchTab('settings', this)">锁屏规则与密码</button>
+    <button class="tab-btn" onclick="switchTab('logs', this)">答题记录</button>
+  </div>
+
+  <div id="tab-ai" class="panel">
+    <div class="card">
+      <h3 style="margin-top:0;">AI 一键出题（扩充题库）</h3>
+      <p style="font-size:13px; color:var(--muted);">输入知识点或范围描述，AI 自动生成四年级上册四选一题并直接入库。需在 Ubuntu 的 <code>~/homenas/mitv/web-server/.env</code> 里配置 AI_API_BASE 与 AI_API_KEY（参考 .env.example），配置后重启容器生效。</p>
+      <div class="toolbar">
+        <select id="aiSubject">
+          <option value="数学">数学</option>
+          <option value="语文">语文</option>
+          <option value="英语">英语</option>
+        </select>
+        <input id="aiTopic" type="text" placeholder="例：人教版四年级上册除数是两位数的除法易错题" style="flex:1; min-width:220px;" />
+        <select id="aiCount">
+          <option value="10">10 题</option>
+          <option value="20">20 题</option>
+          <option value="30">30 题</option>
+        </select>
+        <button class="btn-primary" onclick="aiGenerate()" id="aiBtn">生成并入库</button>
+      </div>
+      <div id="aiResultBox" style="margin-top:12px; font-size:13px; color:var(--muted);"></div>
+    </div>
+  </div>
+
+  <div id="tab-remote" class="panel">
+    <div class="card">
+      <h3 style="margin-top:0;">手机无痕远程控制（防孩子偷看密码）</h3>
+      <p style="font-size:13px; color:var(--muted);">点击后电视端会在 4 秒内自动接收并执行，全程不在电视屏幕显示任何密码输入框。</p>
+      <div class="toolbar" style="margin-top:14px;">
+        <button class="btn-primary" onclick="sendRemoteCommand('bypass', 3600)">远程放行 1 小时</button>
+        <button class="btn-primary" onclick="sendRemoteCommand('bypass', 7200)">远程放行 2 小时</button>
+        <button class="btn-outline" onclick="sendRemoteCommand('bypass', 1800)">远程放行 30 分钟</button>
+      </div>
+      <div class="toolbar">
+        <button class="btn-outline" onclick="sendRemoteCommand('end_bypass', 3600)">提前结束放行（恢复 10 分钟计时）</button>
+        <button class="btn-danger" onclick="sendRemoteCommand('lock_now', 3600)">立即远程锁屏答题</button>
+      </div>
+      <div id="remoteStatusBox" style="margin-top:12px; font-size:13px; color:var(--muted);">加载指令状态中...</div>
+    </div>
+  </div>
+
+  <div id="tab-questions" class="panel active">
+    <div class="card">
+      <div class="toolbar">
+        <select id="filterSubject" onchange="loadQuestions(1)">
+          <option value="">全部学科</option>
+          <option value="数学">数学</option>
+          <option value="英语">英语</option>
+          <option value="语文">语文</option>
+          <option value="常识">常识</option>
+        </select>
+        <select id="filterUnit" onchange="loadQuestions(1)">
+          <option value="">全部单元</option>
+        </select>
+        <input id="searchKeyword" type="text" placeholder="搜索题干或解析关键字..." style="flex:1; min-width:180px;" />
+        <button class="btn-outline" onclick="loadQuestions(1)">查询</button>
+        <button class="btn-primary" onclick="openModal()">+ 新增题目</button>
+        <button class="btn-outline" onclick="window.open('/print.html', '_blank')">分类打印 / 存 PDF</button>
+      </div>
+      <div id="questionList"></div>
+      <div id="paginationBar" class="toolbar" style="justify-content:space-between; margin-top:14px; margin-bottom:0;"></div>
+    </div>
+  </div>
+
+  <div id="tab-library" class="panel">
+    <div class="card">
+      <h3 style="margin-top:0;">出题单元范围（按学科分组，当前在线题库）</h3>
+      <p style="font-size:13px; color:var(--muted);">按学科分别勾选单元；不勾选任何单元 = 全部单元都可能出题。保存后电视 30 分钟内或下次锁屏自动同步生效。</p>
+      <div id="unitCheckboxList" style="margin:12px 0;"></div>
+      <label style="display:flex; align-items:center; gap:7px; font-size:13px; color:var(--muted); margin-bottom:10px;">
+        <input type="checkbox" id="excludeUnclassified" /> 出题时排除「未分类」题目（推荐，避免弹出无法归类的题）
+      </label>
+      <div class="toolbar">
+        <button class="btn-primary" onclick="saveActiveUnits()">保存出题单元</button>
+        <button class="btn-outline" onclick="selectAllUnits(true)">全选</button>
+        <button class="btn-outline" onclick="selectAllUnits(false)">全不选（全部单元）</button>
+        <button class="btn-outline" onclick="backfillUnits()">重新回填单元标签</button>
+      </div>
+      <div id="librarySummary" style="margin-top:10px; font-size:13px; color:var(--muted);">加载中...</div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;">独立题库文件（不覆盖现有库，按需导入）</h3>
+      <table>
+        <thead><tr><th>文件</th><th>题数</th><th>说明</th><th>操作</th></tr></thead>
+        <tbody id="seedFileTable"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;">分类打印</h3>
+      <p style="font-size:13px; color:var(--muted);">按「年级 → 学科 → 单元」分组打印或导出 PDF，可勾选是否附带答案与解析。</p>
+      <a href="/print.html" target="_blank"><button class="btn-outline">打开分类打印页</button></a>
+    </div>
+  </div>
+
+  <div id="tab-import" class="panel">
+    <div class="card">
+      <h3 style="margin-top:0;">导出当前全部题库</h3>
+      <p style="font-size:13px; color:var(--muted);">可先下载备份，或者在电脑上编辑好 JSON 后重新批量导入。</p>
+      <a href="/api/admin/export" download="mitv-quiz-backup.json">
+        <button class="btn-outline">下载题库 JSON 备份</button>
+      </a>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;">批量导入 JSON 题目</h3>
+      <p style="font-size:13px; color:var(--muted);">格式为 <code>{"questions": [...]}</code> 或直接是题目数组 <code>[...]</code>，每题含 subject、grade、question、options(4个)、correct_index(0-3)、explanation。</p>
+      <textarea id="importJsonInput" placeholder='[
+  {
+    "subject": "数学",
+    "grade": "四年级下",
+    "question": "25 × 8 的结果是多少？",
+    "options": ["100", "200", "250", "400"],
+    "correct_index": 1,
+    "explanation": "25 × 8 = 200。"
+  }
+]'></textarea>
+      <div class="toolbar" style="margin-top:10px;">
+        <label style="font-size:13px; display:flex; align-items:center; gap:6px;">
+          <input type="checkbox" id="replaceAllCheck" />
+          清空旧题库并完全替换（不勾选则追加）
+        </label>
+        <button class="btn-primary" onclick="importJson()">立即导入</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-settings" class="panel">
+    <div class="card">
+      <h3 style="margin-top:0;">电视端防沉迷规则设置（电视拉取更新后生效）</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label>每次可观看时长（秒，默认 600 = 10分钟）</label>
+          <input id="cfgWatchLimit" type="number" min="30" max="7200" />
+        </div>
+        <div class="field">
+          <label>答错惩罚：每错 1 题追加题数（默认 1）</label>
+          <input id="cfgWrongPenalty" type="number" min="0" max="3" />
+        </div>
+        <div class="field">
+          <label>单次锁屏最多累计待答题数上限（默认 5）</label>
+          <input id="cfgMaxPending" type="number" min="1" max="20" />
+        </div>
+        <div class="field">
+          <label>家长应急密码（4位数字，秘密按键：上上下下左左右右）</label>
+          <input id="cfgParentPin" type="text" maxlength="4" pattern="\d{4}" />
+        </div>
+        <div class="field">
+          <label>密码解锁后放行时长（秒，默认 3600 = 1小时）</label>
+          <input id="cfgBypassSeconds" type="number" min="60" max="14400" />
+        </div>
+      </div>
+      <div style="margin-top:16px;">
+        <button class="btn-primary" onclick="saveSettings()">保存配置</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-logs" class="panel">
+    <div class="card">
+      <div class="stats-row" id="logStats"></div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>时间</th>
+              <th>学科</th>
+              <th>题目</th>
+              <th>结果</th>
+              <th>剩余待答</th>
+            </tr>
+          </thead>
+          <tbody id="logTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask" id="qModalMask">
+  <div class="modal">
+    <h2 id="modalTitle">新增题目</h2>
+    <input type="hidden" id="editQId" />
+    <div class="form-grid">
+      <div class="field">
+        <label>学科</label>
+        <select id="fSubject">
+          <option value="数学">数学</option>
+          <option value="英语">英语</option>
+          <option value="语文">语文</option>
+          <option value="常识">常识</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>年级/教材标注</label>
+        <input id="fGrade" type="text" value="四年级上" />
+      </div>
+      <div class="field">
+        <label>单元（用于筛选分类，如：第1单元 大数的认识 / U1 Come on In）</label>
+        <input id="fUnit" type="text" value="" placeholder="选填" />
+      </div>
+    </div>
+    <div class="field" style="margin-top:10px;">
+      <label>题干内容</label>
+      <input id="fQuestion" type="text" placeholder="请输入题目描述" />
+    </div>
+    <div class="form-grid" style="margin-top:10px;">
+      <div class="field"><label>选项 A</label><input id="fOpt0" type="text" /></div>
+      <div class="field"><label>选项 B</label><input id="fOpt1" type="text" /></div>
+      <div class="field"><label>选项 C</label><input id="fOpt2" type="text" /></div>
+      <div class="field"><label>选项 D</label><input id="fOpt3" type="text" /></div>
+    </div>
+    <div class="form-grid" style="margin-top:10px;">
+      <div class="field">
+        <label>正确答案</label>
+        <select id="fCorrect">
+          <option value="0">A</option>
+          <option value="1">B</option>
+          <option value="2">C</option>
+          <option value="3">D</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>启用状态</label>
+        <select id="fEnabled">
+          <option value="true">启用</option>
+          <option value="false">停用</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" style="margin-top:10px;">
+      <label>题目解析（答错或答完提示）</label>
+      <input id="fExplain" type="text" placeholder="简短讲解原因" />
+    </div>
+    <div class="toolbar" style="justify-content:flex-end; margin-top:16px; margin-bottom:0;">
+      <button class="btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn-primary" onclick="saveQuestion()">保存题目</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toastBox"></div>
+
+<script>
+const quizApiUrl = `${window.location.origin}/api/quiz.json`;
+document.getElementById("quizUrlText").textContent = quizApiUrl;
+
+function showToast(msg) {
+  const el = document.getElementById("toastBox");
+  el.textContent = msg;
+  el.style.display = "block";
+  setTimeout(() => { el.style.display = "none"; }, 2400);
+}
+
+function copyQuizUrl() {
+  navigator.clipboard.writeText(quizApiUrl).then(() => showToast("已复制 JSON 地址"));
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("tab-" + name).classList.add("active");
+  if (name === "remote") loadRemoteStatus();
+  if (name === "ai") loadQuestionTotal();
+  if (name === "library") loadLibraryConfig();
+  if (name === "settings") loadSettings();
+  if (name === "logs") loadLogs();
+}
+
+let cachedQuestions = [];
+let currentPage = 1;
+const PAGE_SIZE = 30;
+
+async function loadQuestions(page) {
+  if (page) currentPage = page;
+  const subject = document.getElementById("filterSubject").value;
+  const unit = document.getElementById("filterUnit").value;
+  const keyword = document.getElementById("searchKeyword").value.trim();
+  const params = new URLSearchParams();
+  if (subject) params.set("subject", subject);
+  if (unit) params.set("unit", unit);
+  if (keyword) params.set("keyword", keyword);
+  params.set("page", String(currentPage));
+  params.set("page_size", String(PAGE_SIZE));
+  const res = await fetch(`/api/admin/questions?${params.toString()}`);
+  const data = await res.json();
+  cachedQuestions = data.questions || [];
+  const total = data.total || 0;
+  const enabledTotal = data.enabled_total || 0;
+  const sc = data.subject_counts || {};
+  const scText = Object.entries(sc).map(([k, v]) => `${k} ${v}`).join(" / ");
+  document.getElementById("headerSummary").textContent =
+    `筛选命中 ${total} 题（启用 ${enabledTotal} 题）${scText ? " · " + scText : ""}`;
+  renderUnitOptions(data.unit_counts || {});
+  renderQuestions();
+  renderPagination(total);
+}
+
+function renderUnitOptions(unitCounts) {
+  const sel = document.getElementById("filterUnit");
+  const current = sel.value;
+  const entries = Object.entries(unitCounts).sort((a, b) => a[0].localeCompare(b[0], "zh"));
+  sel.innerHTML = '<option value="">全部单元</option>' +
+    entries.map(([u, n]) => `<option value="${escapeHtml(u)}">${escapeHtml(u)} (${n})</option>`).join("");
+  if (current && entries.some(([u]) => u === current)) {
+    sel.value = current;
+  }
+}
+
+function renderPagination(total) {
+  const bar = document.getElementById("paginationBar");
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  bar.innerHTML = `
+    <span style="font-size:13px; color:var(--muted);">第 ${currentPage} / ${totalPages} 页（共 ${total} 题）</span>
+    <div style="display:flex; gap:8px;">
+      <button class="btn-outline btn-sm" ${currentPage <= 1 ? "disabled" : ""} onclick="loadQuestions(${currentPage - 1})">上一页</button>
+      <button class="btn-outline btn-sm" ${currentPage >= totalPages ? "disabled" : ""} onclick="loadQuestions(${currentPage + 1})">下一页</button>
+    </div>
+  `;
+}
+
+function renderQuestions() {
+  const container = document.getElementById("questionList");
+  if (!cachedQuestions.length) {
+    container.innerHTML = '<div style="text-align:center; color:var(--muted); padding:24px;">暂无匹配的题目</div>';
+    return;
+  }
+  const letters = ["A", "B", "C", "D"];
+  container.innerHTML = cachedQuestions.map(q => `
+    <div class="q-item ${q.enabled ? "" : "disabled"}">
+      <div class="q-head">
+        <div>
+          <div class="badges">
+            <span class="badge">${escapeHtml(q.subject)}</span>
+            <span class="badge grade">${escapeHtml(q.grade)}</span>
+            ${q.unit ? `<span class="badge" style="background:#dcfce7;color:#166534;">${escapeHtml(q.unit)}</span>` : ""}
+            ${q.enabled ? "" : '<span class="badge off">已停用</span>'}
+          </div>
+          <div style="font-weight:600; font-size:15px;">#${q.id} ${escapeHtml(q.question)}</div>
+        </div>
+        <div style="display:flex; gap:6px; flex-shrink:0;">
+          <button class="btn-outline btn-sm" onclick="toggleQuestion(${q.id})">${q.enabled ? "停用" : "启用"}</button>
+          <button class="btn-outline btn-sm" onclick="openModal(${q.id})">编辑</button>
+          <button class="btn-danger btn-sm" onclick="deleteQuestion(${q.id})">删除</button>
+        </div>
+      </div>
+      <div class="options-grid">
+        ${q.options.map((opt, idx) => `
+          <div class="opt-box ${idx === q.correct_index ? "correct" : ""}">
+            ${letters[idx]}. ${escapeHtml(opt)}
+          </div>
+        `).join("")}
+      </div>
+      ${q.explanation ? `<div class="explain">解析：${escapeHtml(q.explanation)}</div>` : ""}
+    </div>
+  `).join("");
+}
+
+function escapeHtml(str) {
+  return String(str || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function openModal(id) {
+  const mask = document.getElementById("qModalMask");
+  if (id) {
+    const q = cachedQuestions.find(item => item.id === id);
+    if (!q) return;
+    document.getElementById("modalTitle").textContent = `编辑题目 #${id}`;
+    document.getElementById("editQId").value = id;
+    document.getElementById("fSubject").value = q.subject;
+    document.getElementById("fGrade").value = q.grade;
+    document.getElementById("fUnit").value = q.unit || "";
+    document.getElementById("fQuestion").value = q.question;
+    document.getElementById("fOpt0").value = q.options[0] || "";
+    document.getElementById("fOpt1").value = q.options[1] || "";
+    document.getElementById("fOpt2").value = q.options[2] || "";
+    document.getElementById("fOpt3").value = q.options[3] || "";
+    document.getElementById("fCorrect").value = String(q.correct_index);
+    document.getElementById("fEnabled").value = q.enabled ? "true" : "false";
+    document.getElementById("fExplain").value = q.explanation || "";
+  } else {
+    document.getElementById("modalTitle").textContent = "新增题目";
+    document.getElementById("editQId").value = "";
+    document.getElementById("fSubject").value = "数学";
+    document.getElementById("fGrade").value = "四年级上";
+    document.getElementById("fUnit").value = "";
+    document.getElementById("fQuestion").value = "";
+    document.getElementById("fOpt0").value = "";
+    document.getElementById("fOpt1").value = "";
+    document.getElementById("fOpt2").value = "";
+    document.getElementById("fOpt3").value = "";
+    document.getElementById("fCorrect").value = "0";
+    document.getElementById("fEnabled").value = "true";
+    document.getElementById("fExplain").value = "";
+  }
+  mask.classList.add("open");
+}
+
+function closeModal() {
+  document.getElementById("qModalMask").classList.remove("open");
+}
+
+async function saveQuestion() {
+  const id = document.getElementById("editQId").value;
+  const payload = {
+    subject: document.getElementById("fSubject").value,
+    grade: document.getElementById("fGrade").value.trim() || "四年级上",
+    unit: document.getElementById("fUnit").value.trim(),
+    question: document.getElementById("fQuestion").value.trim(),
+    options: [
+      document.getElementById("fOpt0").value.trim(),
+      document.getElementById("fOpt1").value.trim(),
+      document.getElementById("fOpt2").value.trim(),
+      document.getElementById("fOpt3").value.trim(),
+    ],
+    correct_index: Number(document.getElementById("fCorrect").value),
+    explanation: document.getElementById("fExplain").value.trim(),
+    enabled: document.getElementById("fEnabled").value === "true",
+  };
+  const url = id ? `/api/admin/questions/${id}` : "/api/admin/questions";
+  const method = id ? "PUT" : "POST";
+  const res = await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    alert("保存失败：" + JSON.stringify(err.detail || err));
+    return;
+  }
+  closeModal();
+  showToast(id ? "题目已更新" : "题目已添加");
+  loadQuestions();
+}
+
+async function toggleQuestion(id) {
+  const q = cachedQuestions.find(item => item.id === id);
+  if (!q) return;
+  const payload = { ...q, enabled: !q.enabled };
+  await fetch(`/api/admin/questions/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  showToast(q.enabled ? "已停用" : "已启用");
+  loadQuestions();
+}
+
+async function deleteQuestion(id) {
+  if (!confirm(`确定删除第 #${id} 题吗？`)) return;
+  await fetch(`/api/admin/questions/${id}`, { method: "DELETE" });
+  showToast("已删除");
+  loadQuestions();
+}
+
+async function importJson() {
+  const raw = document.getElementById("importJsonInput").value.trim();
+  if (!raw) return;
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (e) {
+    alert("JSON 格式有误：" + e.message);
+    return;
+  }
+  const questions = Array.isArray(parsed) ? parsed : parsed.questions;
+  if (!Array.isArray(questions) || !questions.length) {
+    alert("JSON 中未找到有效的 questions 题目列表");
+    return;
+  }
+  const replaceAll = document.getElementById("replaceAllCheck").checked;
+  const res = await fetch("/api/admin/import", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ replace_all: replaceAll, questions }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    alert("导入失败：" + JSON.stringify(err.detail || err));
+    return;
+  }
+  const data = await res.json();
+  showToast(`成功导入 ${data.imported} 道题`);
+  loadQuestions();
+}
+
+async function loadSettings() {
+  const res = await fetch("/api/admin/settings");
+  const s = await res.json();
+  document.getElementById("cfgWatchLimit").value = s.watch_limit_seconds;
+  document.getElementById("cfgWrongPenalty").value = s.wrong_penalty;
+  document.getElementById("cfgMaxPending").value = s.max_pending_questions;
+  document.getElementById("cfgParentPin").value = s.parent_pin;
+  document.getElementById("cfgBypassSeconds").value = s.bypass_seconds;
+}
+
+async function saveSettings() {
+  const pin = document.getElementById("cfgParentPin").value.trim();
+  if (!/^\d{4}$/.test(pin)) {
+    alert("家长密码必须是 4 位纯数字");
+    return;
+  }
+  const payload = {
+    watch_limit_seconds: Number(document.getElementById("cfgWatchLimit").value),
+    wrong_penalty: Number(document.getElementById("cfgWrongPenalty").value),
+    max_pending_questions: Number(document.getElementById("cfgMaxPending").value),
+    parent_pin: pin,
+    bypass_seconds: Number(document.getElementById("cfgBypassSeconds").value),
+  };
+  const res = await fetch("/api/admin/settings", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    alert("保存失败，请检查数值范围");
+    return;
+  }
+  showToast("参数已保存，电视端下次同步自动生效");
+}
+
+async function loadLogs() {
+  const res = await fetch("/api/admin/logs");
+  const data = await res.json();
+  const rate = data.total ? Math.round((data.correct_count / data.total) * 100) : 0;
+  document.getElementById("logStats").innerHTML = `
+    <div class="stat-card"><div class="stat-val">${data.total}</div><div class="stat-lbl">总答题次数</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--success);">${data.correct_count}</div><div class="stat-lbl">答对次数</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--danger);">${data.wrong_count}</div><div class="stat-lbl">答错次数</div></div>
+    <div class="stat-card"><div class="stat-val">${rate}%</div><div class="stat-lbl">正确率</div></div>
+  `;
+  const tbody = document.getElementById("logTableBody");
+  if (!data.logs.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--muted);">暂无电视端答题上报记录</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.logs.map(l => {
+    const dt = new Date(l.created_at * 1000).toLocaleString("zh-CN");
+    return `
+      <tr>
+        <td>${dt}</td>
+        <td>${escapeHtml(l.subject)}</td>
+        <td>${escapeHtml(l.question_text)}</td>
+        <td style="color:${l.is_correct ? "var(--success)" : "var(--danger)"}; font-weight:600;">${l.is_correct ? "答对" : "答错"}</td>
+        <td>${l.pending_after}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+async function loadLibraryConfig() {
+  const res = await fetch("/api/admin/library");
+  const d = await res.json();
+  const active = new Set(d.active_units || []);
+  const bySubject = d.units_by_subject || {};
+  document.getElementById("excludeUnclassified").checked = !!d.exclude_unclassified;
+  document.getElementById("librarySummary").textContent =
+    `在线题库共 ${d.total} 题（启用 ${d.enabled_total} 题）；当前出题范围：${active.size ? [...active].join("、") : "全部单元"}`;
+
+  const subjects = Object.keys(bySubject).sort();
+  document.getElementById("unitCheckboxList").innerHTML = subjects.map(subject => {
+    const units = (bySubject[subject] || []).sort((a,b) => a.unit.localeCompare(b.unit, "zh"));
+    return `
+      <div style="margin-bottom:14px;">
+        <div style="font-weight:600; font-size:15px; margin-bottom:8px;">
+          ${escapeHtml(subject)}
+          <span style="font-size:12px; color:var(--muted); font-weight:400;">（共 ${units.reduce((s,u) => s + u.count, 0)} 题）</span>
+          <button class="btn-outline btn-sm" onclick="toggleSubjectUnits('${escapeHtml(subject)}', true)">本学科全选</button>
+          <button class="btn-outline btn-sm" onclick="toggleSubjectUnits('${escapeHtml(subject)}', false)">本学科清空</button>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:8px;">
+          ${units.map(u => {
+            const token = subject + "::" + u.unit;
+            const checked = active.has(token) || active.has(u.unit);
+            return `
+              <label style="display:flex; gap:7px; align-items:center; font-size:14px; padding:7px 9px; border:1px solid var(--border); border-radius:7px; background:#f9fafb;">
+                <input type="checkbox" class="unitChk" data-subject="${escapeHtml(subject)}" value="${escapeHtml(token)}" ${checked ? "checked" : ""} />
+                <span>${escapeHtml(u.unit)}（${u.count} 题）</span>
+              </label>`;
+          }).join("")}
+        </div>
+      </div>`;
+  }).join("") || '<span style="color:var(--muted);">暂无单元标签，请点击「重新回填单元标签」</span>';
+  document.getElementById("seedFileTable").innerHTML =
+    (d.seed_files || []).map(f => `
+      <tr>
+        <td><code>${escapeHtml(f.name)}</code><br><span style="font-size:11px;color:var(--muted);">${f.size_kb} KB</span></td>
+        <td>${f.count}</td>
+        <td>${escapeHtml(f.note)}</td>
+        <td>
+          <button class="btn-outline btn-sm" onclick="loadSeedFile('${escapeHtml(f.name)}', false)">追加导入</button>
+          <button class="btn-danger btn-sm" onclick="loadSeedFile('${escapeHtml(f.name)}', true)">替换全部</button>
+        </td>
+      </tr>
+    `).join("");
+}
+
+async function saveActiveUnits() {
+  const units = [...document.querySelectorAll(".unitChk:checked")].map(el => el.value);
+  const excludeUnclassified = document.getElementById("excludeUnclassified").checked;
+  const res = await fetch("/api/admin/units", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ units, exclude_unclassified: excludeUnclassified }),
+  });
+  if (!res.ok) { alert("保存失败"); return; }
+  showToast(units.length ? `已按学科限定 ${units.length} 个单元出题` : "已恢复为全部单元出题");
+  loadLibraryConfig();
+}
+
+function selectAllUnits(checked) {
+  document.querySelectorAll(".unitChk").forEach(el => { el.checked = checked; });
+}
+
+function toggleSubjectUnits(subject, checked) {
+  document.querySelectorAll(".unitChk").forEach(el => {
+    if (el.dataset.subject === subject) el.checked = checked;
+  });
+}
+
+async function backfillUnits() {
+  const res = await fetch("/api/admin/units/backfill", { method: "POST" });
+  const d = await res.json();
+  showToast(`已为 ${d.backfilled} 道题回填单元标签`);
+  loadLibraryConfig();
+}
+
+async function loadSeedFile(name, replaceAll) {
+  const tip = replaceAll
+    ? `确定用 ${name} 完全替换当前在线题库吗？当前题库将被清空！`
+    : `确定把 ${name} 追加到当前在线题库吗？`;
+  if (!confirm(tip)) return;
+  const res = await fetch("/api/admin/library/load", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, replace_all: replaceAll }),
+  });
+  const d = await res.json();
+  if (!res.ok) { alert("导入失败：" + (d.detail || "未知错误")); return; }
+  showToast(`成功导入 ${d.loaded} 道题`);
+  loadLibraryConfig();
+  loadQuestions(1);
+}
+
+async function aiGenerate() {
+  const topic = document.getElementById("aiTopic").value.trim();
+  if (!topic) {
+    alert("请输入题目主题描述");
+    return;
+  }
+  const btn = document.getElementById("aiBtn");
+  btn.disabled = true;
+  btn.textContent = "AI 生成中，约 20-60 秒...";
+  document.getElementById("aiResultBox").textContent = "正在调用 AI 生成题目，请耐心等待...";
+  try {
+    const res = await fetch("/api/admin/ai-generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        topic,
+        count: Number(document.getElementById("aiCount").value),
+        subject: document.getElementById("aiSubject").value,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      document.getElementById("aiResultBox").textContent = "失败：" + (data.detail || "未知错误");
+      return;
+    }
+    document.getElementById("aiResultBox").textContent =
+      `成功生成 ${data.generated} 道题并入库，当前题库总题数：${data.total}`;
+    loadQuestions(1);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "生成并入库";
+  }
+}
+
+async function loadQuestionTotal() {
+  const res = await fetch("/api/admin/questions?page=1&page_size=1");
+  const d = await res.json();
+  document.getElementById("aiResultBox").textContent = `当前题库总题数：${d.total}`;
+}
+
+async function loadRemoteStatus() {
+  const d = await res.json();
+  const labelMap = {
+    none: "无待执行指令",
+    bypass: `放行 ${Math.round((d.seconds || 3600) / 60)} 分钟`,
+    end_bypass: "结束放行并恢复 10 分钟计时",
+    lock_now: "立即锁屏答题",
+  };
+  const dt = d.issued_at ? new Date(d.issued_at * 1000).toLocaleString("zh-CN") : "暂无";
+  document.getElementById("remoteStatusBox").textContent =
+    `最近下发指令：${labelMap[d.command] || d.command}（指令编号 #${d.command_id}，下发时间：${dt}）`;
+}
+
+async function sendRemoteCommand(command, seconds) {
+  const res = await fetch("/api/admin/remote", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ command, seconds }),
+  });
+  if (!res.ok) {
+    alert("下发失败");
+    return;
+  }
+  showToast("指令已下发，电视将在几秒内自动执行");
+  loadRemoteStatus();
+}
+
+loadQuestions();
+</script>
+</body>
+</html>

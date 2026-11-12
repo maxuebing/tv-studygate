@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>题库分类打印（按年级 / 学科 / 单元）</title>
+  <style>
+    :root { --primary: #2563eb; --text: #1f2937; --muted: #6b7280; --border: #d1d5db; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: var(--text); background: #f3f4f6; }
+    .control-bar {
+      position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid var(--border);
+      padding: 14px 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    }
+    .control-bar h1 { font-size: 18px; margin: 0 14px 0 0; }
+    select, button, input { padding: 7px 11px; border-radius: 7px; border: 1px solid var(--border); font-size: 14px; }
+    button { cursor: pointer; background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 600; }
+    button.ghost { background: #fff; color: var(--text); font-weight: 400; }
+    .summary { font-size: 13px; color: var(--muted); }
+    .sheet { max-width: 900px; margin: 18px auto; padding: 30px 36px; background: #fff; }
+    h2.grade { border-bottom: 2px solid var(--text); padding-bottom: 6px; margin: 0 0 18px; font-size: 22px; }
+    h3.subject { color: var(--primary); margin: 22px 0 12px; font-size: 18px; }
+    h4.unit { background: #eef2ff; padding: 7px 12px; border-radius: 6px; margin: 16px 0 10px; font-size: 15px; }
+    .q { padding: 9px 0 11px; border-bottom: 1px dashed #e5e7eb; page-break-inside: avoid; }
+    .q-title { font-weight: 600; font-size: 14px; line-height: 1.6; }
+    .q-num { color: var(--muted); margin-right: 6px; font-weight: 400; }
+    .opts { margin: 5px 0 0 24px; font-size: 13px; line-height: 1.7; }
+    .ans { color: #15803d; font-weight: 600; }
+    .explain { margin: 3px 0 0 24px; color: var(--muted); font-size: 12px; }
+    @media print {
+      .control-bar { display: none !important; }
+      body { background: #fff; }
+      .sheet { max-width: none; margin: 0; padding: 0; }
+      h2.grade { page-break-before: auto; }
+      h3.subject, h4.unit { page-break-after: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="control-bar">
+  <h1>题库分类打印</h1>
+  <label>年级：<select id="selGrade"><option value="">全部</option></select></label>
+  <label>学科：<select id="selSubject"><option value="">全部</option><option>数学</option><option>语文</option><option>英语</option></select></label>
+  <label>单元：<select id="selUnit"><option value="">全部单元</option></select></label>
+  <label style="font-size:13px; display:flex; align-items:center; gap:5px;">
+    <input type="checkbox" id="showAnswer" checked /> 显示答案与解析
+  </label>
+  <button onclick="loadPrintData()">刷新</button>
+  <button class="ghost" onclick="window.print()">打印 / 存为 PDF</button>
+  <span class="summary" id="summaryText">加载中...</span>
+</div>
+<div class="sheet" id="sheet"></div>
+<script>
+function escapeHtml(s) {
+  return String(s || "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+}
+
+async function loadPrintData() {
+  const grade = document.getElementById("selGrade").value;
+  const subject = document.getElementById("selSubject").value;
+  const unit = document.getElementById("selUnit").value;
+  const showAnswer = document.getElementById("showAnswer").checked;
+  const params = new URLSearchParams();
+  params.set("page_size", "200");
+  const infoRes = await fetch("/api/admin/questions?page=1&page_size=1");
+  const info = await infoRes.json();
+  renderSelectOptions(info.grade_counts || {}, info.unit_counts || {});
+
+  const all = [];
+  let page = 1;
+  while (true) {
+    params.set("page", String(page));
+    const res = await fetch(`/api/admin/questions?${params.toString()}`);
+    const d = await res.json();
+    all.push(...(d.questions || []));
+    if (all.length >= d.total || page > 10) break;
+    page++;
+  }
+  const filtered = all.filter(q => {
+    if (grade && q.grade !== grade) return false;
+    if (subject && q.subject !== subject) return false;
+    if (unit && q.unit !== unit) return false;
+    return q.enabled;
+  });
+  renderSheet(filtered, showAnswer);
+  document.getElementById("summaryText").textContent = `共 ${filtered.length} 道（已启用）`;
+}
+
+function renderSelectOptions(gradeCounts, unitCounts) {
+  const g = document.getElementById("selGrade");
+  const currentG = g.value;
+  g.innerHTML = '<option value="">全部</option>' +
+    Object.entries(gradeCounts).map(([k, n]) => `<option value="${escapeHtml(k)}">${escapeHtml(k)} (${n})</option>`).join("");
+  if (currentG) g.value = currentG;
+
+  const u = document.getElementById("selUnit");
+  const currentU = u.value;
+  u.innerHTML = '<option value="">全部单元</option>' +
+    Object.entries(unitCounts).sort((a,b) => a[0].localeCompare(b[0], "zh"))
+      .map(([k, n]) => `<option value="${escapeHtml(k)}">${escapeHtml(k)} (${n})</option>`).join("");
+  if (currentU) u.value = currentU;
+}
+
+function renderSheet(questions, showAnswer) {
+  const groups = {};
+  for (const q of questions) {
+    const g = q.grade || "未标年级";
+    const s = q.subject || "未分类";
+    const u = q.unit || "未标单元";
+    groups[g] = groups[g] || {};
+    groups[g][s] = groups[g][s] || {};
+    (groups[g][s][u] = groups[g][s][u] || []).push(q);
+  }
+  let html = "";
+  const letter = ["A", "B", "C", "D"];
+  for (const [grade, subjects] of Object.entries(groups)) {
+    html += `<h2 class="grade">${escapeHtml(grade)}</h2>`;
+    for (const [subject, units] of Object.entries(subjects)) {
+      html += `<h3 class="subject">${escapeHtml(subject)}</h3>`;
+      for (const [unit, qs] of Object.entries(units)) {
+        html += `<h4 class="unit">${escapeHtml(unit)}（${qs.length} 题）</h4>`;
+        qs.forEach((q, i) => {
+          html += `<div class="q"><div class="q-title"><span class="q-num">${i + 1}.</span>${escapeHtml(q.question)}</div>`;
+          html += `<div class="opts">${q.options.map((o, oi) => `${letter[oi]}. ${escapeHtml(o)}`).join("　")}</div>`;
+          if (showAnswer) {
+            html += `<div class="explain"><span class="ans">答案：${letter[q.correct_index]}</span>${q.explanation ? "　解析：" + escapeHtml(q.explanation) : ""}</div>`;
+          }
+          html += `</div>`;
+        });
+      }
+    }
+  }
+  document.getElementById("sheet").innerHTML = html || '<p style="text-align:center;color:#6b7280;">没有符合条件的题目</p>';
+}
+
+document.getElementById("selGrade").addEventListener("change", loadPrintData);
+document.getElementById("selSubject").addEventListener("change", loadPrintData);
+document.getElementById("selUnit").addEventListener("change", loadPrintData);
+document.getElementById("showAnswer").addEventListener("change", loadPrintData);
+loadPrintData();
+</script>
+</body>
+</html>

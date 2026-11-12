@@ -1,0 +1,54 @@
+{
+  "textbook": "教科版（广州）英语四年级上册（2024新教材）",
+  "source": "【其他】广州教科版英语四年级上册电子课本.pdf + 单元真卷词汇证据",
+  "units": [
+    {
+      "unit": "U1 Come on In",
+      "theme": "待客与做客（当好小主人/小客人）",
+      "words": ["host", "guest", "welcome", "gift", "visit", "seat", "bathroom", "drink", "flowers", "show around"],
+      "patterns": ["Welcome to my home.", "Come in, please.", "These are for you.", "Have a seat, please.", "Can I get you a drink?", "Can I use the bathroom?", "Sure. It's over there.", "May I have a look?", "Thank you."]
+    },
+    {
+      "unit": "U2 Help Yourself",
+      "theme": "用餐与餐桌礼仪",
+      "words": ["soup", "chicken", "pass", "full", "tissues", "polite", "table manners"],
+      "patterns": ["Help yourself.", "Would you like some...?", "Yes, please. / No, thanks. I'm full.", "Could you please pass me...?", "Thank you for the dinner."]
+    },
+    {
+      "unit": "U3 I'm the Chef Today",
+      "theme": "下厨做饭（步骤表达）",
+      "words": ["add", "boil", "stir", "wash", "greens", "pot", "noodles", "dumplings", "turn off", "seasoning"],
+      "patterns": ["First, wash...", "Add ... into the pot.", "Boil ... for ... minutes.", "Don't forget to turn off the stove."]
+    },
+    {
+      "unit": "U4 Help Out in the Kitchen",
+      "theme": "厨房家务帮忙",
+      "words": ["sweep", "clear", "wash the dishes", "put away", "take out the rubbish", "leftovers", "fridge"],
+      "patterns": ["After dinner, we need to...", "Let me help with...", "First... Then... After that..."]
+    },
+    {
+      "unit": "U5 She Helps Me a Lot",
+      "theme": "家人与朋友的帮助、分享与友爱",
+      "words": ["help", "share", "ready", "cheer up", "kind", "smile", "always"],
+      "patterns": ["She always helps me...", "Thank you for your help.", "We should share..."]
+    },
+    {
+      "unit": "U6 I Love My Family",
+      "theme": "我爱我家（生日与家庭活动）",
+      "words": ["birthday", "noodles", "cook", "dad", "together", "love"],
+      "patterns": ["Today is my dad's birthday.", "We cook noodles together.", "I love my family."]
+    },
+    {
+      "unit": "U7 Family Time",
+      "theme": "家庭时光（活动安排与建议）",
+      "words": ["spend", "plan", "activity", "together", "job", "worker"],
+      "patterns": ["How do you spend your family time?", "Why don't you...?", "I think you can...", "What about...?", "Maybe you..."]
+    },
+    {
+      "unit": "U8 Joy in the Air",
+      "theme": "节日与庆祝（春节/中秋/元宵）",
+      "words": ["festival", "Spring Festival", "Mid-Autumn Festival", "Lantern Festival", "rice dumplings", "tangyuan", "lanterns", "gifts"],
+      "patterns": ["My favourite festival is...", "What do you do during the festival?", "We eat tangyuan / make rice dumplings."]
+    }
+  ]
+}

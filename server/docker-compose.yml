@@ -1,0 +1,17 @@
+services:
+  mitv-quiz-server:
+    container_name: mitv-quiz-server
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    environment:
+      - TZ=Asia/Shanghai
+      - MITV_DB_PATH=/app/data/mitv.db
+      # 默认 0：不动现有题库；改为 1 并删库重建后，才使用分类版 seed_classified.json
+      - MITV_USE_CLASSIFIED=${MITV_USE_CLASSIFIED:-0}
+      - AI_API_BASE=${AI_API_BASE:-}
+      - AI_API_KEY=${AI_API_KEY:-}
+      - AI_MODEL=${AI_MODEL:-deepseek-chat}
+    volumes:
+      - ./data:/app/data

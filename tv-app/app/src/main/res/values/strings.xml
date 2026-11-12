@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">学习守护锁</string>
+    <string name="accessibility_label">学习守护防退出服务</string>
+    <string name="accessibility_desc">用于在定时答题锁定期间防止误按主页键退出答题界面。</string>
+</resources>

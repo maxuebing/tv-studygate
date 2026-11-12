@@ -1,0 +1,45 @@
+apply plugin: 'com.android.application'
+
+android {
+    namespace 'com.bing.mitvguard'
+    compileSdkVersion 28
+
+    signingConfigs {
+        fixedDebug {
+            storeFile file('mitv-release.keystore')
+            storePassword 'mitvguard123'
+            keyAlias 'mitvguard'
+            keyPassword 'mitvguard123'
+        }
+    }
+
+    defaultConfig {
+        applicationId "com.bing.mitvguard"
+        minSdkVersion 24
+        targetSdkVersion 28
+        versionCode 2
+        versionName "1.0.1"
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.fixedDebug
+        }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.fixedDebug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+}
